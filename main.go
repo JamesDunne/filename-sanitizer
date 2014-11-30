@@ -38,18 +38,33 @@ func main() {
 		}
 	}
 
-	var exact_garbage = []string{"DD5.1", "AC3 5.1",
-		"www.torentz.3xforum.ro", "ResourceRG by Dusty",
-		"{1337x}", "- CODY", "anoXmous_"}
+	var exact_garbage = []string{"DD5.1", "AC3 5.1", "AC3-5.1",
+		"www.torentz.3xforum.ro", "ResourceRG by Dusty", " by WingTip",
+		"{1337x}", "- CODY", " - Ozlem", "anoXmous_0", "anoXmous_", "-FASM", "_Kuth",
+		"(Opt.SWESUBS)", "[big_dad_e™]", "_sujaidr", " - IMAGiNE"}
 
-	var fuzzy_garbage = []string{"x264", "h264", "xvid",
+	var fuzzy_garbage = []string{
+		// Format:
+		"x264", "h264", "xvid",
 		"1080p", "720p", "480p",
-		"ac3", "eng", "aac", "dvdscr",
-		"dvdrip", "brrip", "bdrip", "bluray", "web-dl", "hdtv", "dd5", "3li",
-		"yify", "-rarbg", "-mgb", "-spk", "-jyk", "bluelady", "-ctrlhd", "-vlis",
+		"ac3", "eng", "aac", "aac51", "dvdscr", "MP4", "QEBS5", "STEREO",
+		"dvdrip", "DVD-Rip", "brrip", "bdrip", "bluray", "web-dl", "hdtv", "dd5", "3li",
+		"divx3lm", "divx", "DTS",
+		"DXVA", "hq",
+
+		// Signatures:
+		"yify", "-rarbg", "-mgb", "-spk", "-jyk", "bluelady", "-ctrlhd", "-vlis", "-PCA",
 		"-publichd", "gopo", "-timpe", "-sc4r", "gaz", "-axxo", "wunseedee", "hive-cm8",
-		"hq", "anoxmous", "-anarchy", "-MAXSPEED", "-NuMy", "-FxM", "d-z0n3", "-Noir",
-		"-ExtraTorrentRG"}
+		"anoxmous", "-anarchy", "-MAXSPEED", "-NuMy", "-FxM", "d-z0n3", "-Noir",
+		"-ExtraTorrentRG", "-Nile", "-Stealthmaster", "BOKUTOX", "-WiKi", "-AMIABLE",
+		"-SiNiSTER", "-SHiRK", "-DVL", "_Kuth", "R5", "-HuMPDaY", "-FLAWL3SS", "-BH",
+		"-HHAH", "-iNiQUiTY", "-DAH", "-MXMG", "-haSak", "-Ekolb", "-ESiR", "Blood",
+		"-PsiX", "-CC", "RC",
+	}
+
+	var fuzzy_skip = []string{
+		"cd1", "cd2",
+	}
 
 	for _, fi := range raw_fis {
 		if fi.IsDir() {
@@ -70,7 +85,11 @@ func main() {
 			for _, garbage := range exact_garbage {
 				i := strings.Index(name, garbage)
 				if i >= 0 {
-					name = name[0:i] + name[i+len(garbage):]
+					if i+len(garbage) < len(name) {
+						name = name[0:i] + name[i+len(garbage):]
+					} else {
+						name = name[0:i]
+					}
 					unrecognized = false
 					break
 				}
@@ -120,9 +139,13 @@ func main() {
 					name = strings.TrimRight(name[0:len(name)-len(garbage)], " -_.")
 					unrecognized = false
 					break
-				} else if strings.HasSuffix(nameLower, "["+garbage+"]") {
-					name = strings.TrimRight(name[0:len(name)-len(garbage)], " -_.")
-					unrecognized = false
+				}
+			}
+			for _, skip := range fuzzy_skip {
+				skip = strings.ToLower(skip)
+				nameLower := strings.ToLower(name)
+				if strings.HasSuffix(nameLower, skip) {
+
 					break
 				}
 			}
