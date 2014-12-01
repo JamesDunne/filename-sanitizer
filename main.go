@@ -38,18 +38,23 @@ func main() {
 		}
 	}
 
-	var exact_garbage = []string{"DD5.1", "AC3 5.1", "AC3-5.1",
+	var exact_garbage = []string{
+		"DD5.1", "AC3 5.1", "AC3-5.1", "AC3.5.1", "AAC2.0", ".5.1", "H.264",
 		"www.torentz.3xforum.ro", "ResourceRG by Dusty", " by WingTip",
 		"{1337x}", "- CODY", " - Ozlem", "anoXmous_0", "anoXmous_", "-FASM", "_Kuth",
-		"(Opt.SWESUBS)", "[big_dad_e™]", "_sujaidr", " - IMAGiNE"}
+		"(Opt.SWESUBS)", "[big_dad_e™]", "_sujaidr", " - IMAGiNE", "512.24fps.489kbps.V5.WunSeeDee",
+		"[FS]", "[RePoPo]", "LiMiTED",
+	}
 
 	var fuzzy_garbage = []string{
 		// Format:
 		"x264", "h264", "xvid",
+		"m-720p",
 		"1080p", "720p", "480p",
 		"ac3", "eng", "aac", "aac51", "dvdscr", "MP4", "QEBS5", "STEREO",
-		"dvdrip", "DVD-Rip", "brrip", "bdrip", "bluray", "web-dl", "hdtv", "dd5", "3li",
-		"divx3lm", "divx", "DTS",
+		"dvdrip", "DVD-Rip", "brrip", "bdrip", "bluray", "web-dl", "hdtv", "HDTVRip",
+		"dd5", "3li", "R3", "HDRip",
+		"divx3lm", "divx", "DTS", "PS3",
 		"DXVA", "hq",
 
 		// Signatures:
@@ -59,7 +64,8 @@ func main() {
 		"-ExtraTorrentRG", "-Nile", "-Stealthmaster", "BOKUTOX", "-WiKi", "-AMIABLE",
 		"-SiNiSTER", "-SHiRK", "-DVL", "_Kuth", "R5", "-HuMPDaY", "-FLAWL3SS", "-BH",
 		"-HHAH", "-iNiQUiTY", "-DAH", "-MXMG", "-haSak", "-Ekolb", "-ESiR", "Blood",
-		"-PsiX", "-CC", "RC",
+		"-PsiX", "-CC", "RC", "-playXD", "Clear", "-Ameet6233", "-FXG", "nHD", "SiC",
+		"Judas", "Deceit",
 	}
 
 	var fuzzy_skip = []string{
@@ -117,6 +123,12 @@ func main() {
 			year_text := name[i : i+4]
 			year, err := strconv.Atoi(year_text)
 			if err == nil && year >= 1900 && year <= 2032 {
+
+				// Exception for 2001 A Space Odyssey which was not released in 2001.
+				if year == 2001 && strings.Contains(strings.ToLower(name), "odyssey") {
+					continue
+				}
+
 				film_year = year_text
 				part1 := strings.TrimSpace(name[0:i])
 				part2 := strings.TrimSpace(name[i+4:])
@@ -130,6 +142,7 @@ func main() {
 		}
 
 		// Rip out useless garbage from the tail of the filename:
+		exact_suffix := ""
 		for {
 			unrecognized := true
 			for _, garbage := range fuzzy_garbage {
@@ -145,7 +158,9 @@ func main() {
 				skip = strings.ToLower(skip)
 				nameLower := strings.ToLower(name)
 				if strings.HasSuffix(nameLower, skip) {
-
+					exact_suffix = strings.TrimRight(name[len(name)-len(skip):]+" "+exact_suffix, " -_.")
+					name = strings.TrimRight(name[0:len(name)-len(skip)], " -_.")
+					unrecognized = false
 					break
 				}
 			}
@@ -153,10 +168,14 @@ func main() {
 				break
 			}
 		}
+		if exact_suffix != "" {
+			name += " " + exact_suffix
+		}
 
-		_ = film_year
 		fmt_name := strings.TrimSpace(name)
-		if film_year != "" {
+		if film_year == "2012" && fmt_name == "" {
+			fmt_name = "2012"
+		} else if film_year != "" {
 			fmt_name += " [" + film_year + "]"
 		}
 		fmt.Println(fmt_name + ext)
